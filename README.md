@@ -56,17 +56,33 @@ npm run pack
 ## Architecture
 
 ```
-electron/          # Main process (Node.js)
-  main.ts          # App lifecycle, IPC handlers, subprocess execution
-  preload.ts       # contextBridge — exposes window.api to renderer
+electron/                    # Main process (Node.js)
+  main.ts                    # App lifecycle, IPC handlers, subprocess execution
+  preload.ts                 # contextBridge — exposes window.api to renderer
 
-src/               # Renderer process (React)
-  components/      # UI components grouped by feature
-  stores/          # Zustand stores (orgs, PRs, reviews)
-  types/           # TypeScript types including Electron IPC types
+src/
+  components/                # UI components grouped by feature
+    PRDetail/
+      DiffView/              # Complex components get their own folder
+        index.ts             # Barrel re-export
+        DiffView.tsx         # Root component
+        DiffFileSection.tsx  # Sub-components co-located here
+        DiffHunkSection.tsx
+        InlineFeedbackCard.tsx
+        parseDiff.ts         # Pure logic — no React, no imports from outside
+        types.ts             # Types internal to this feature
+  stores/                    # Zustand stores — own their domain types
+  types/                     # Global ambient declarations only (electron.d.ts)
 ```
 
 The renderer never touches Node.js directly. All `gh` and `claude` commands go through `window.api.exec()` → IPC → `execFile` in the main process.
+
+### Conventions
+
+- **Co-locate by default** — types, utilities, and sub-components live next to the component that owns them
+- **Promote to global only when shared** — `src/types/` is for ambient declarations only; store types live in their store file
+- **Pure logic in `.ts` files** — no React imports in parser/utility files; makes them trivially testable
+- **Barrel exports via `index.ts`** — complex components expose a single import surface; callers never import from internal files
 
 ## License
 
