@@ -16,36 +16,36 @@ export default function PRList() {
   }, [selectedOrg, currentUser, orgs, fetchPRs])
 
   const filteredPRs = prs.filter((pr) => {
-    if (filter === 'review') return pr.reviewDecision === 'REVIEW_REQUIRED' || pr.reviewDecision === ''
-    if (filter === 'mine') return pr.author === currentUser
-    return true
+    if (filter === 'assigned') return pr.assignees.includes(currentUser)
+    if (filter === 'reviewer') return pr.requestedReviewers.includes(currentUser)
+    return true // 'all': every result already involves the current user (from gh search prs --involves @me)
   })
 
   return (
-    <div className="w-80 h-full border-r border-zinc-800/50 flex flex-col bg-zinc-950">
+    <div className="w-80 h-full border-r border-gray-200 flex flex-col bg-white">
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-3">
-          <GitPullRequest className="w-4 h-4 text-zinc-500" />
-          <h2 className="text-sm font-medium text-white">Pull requests</h2>
+          <GitPullRequest className="w-4 h-4 text-gray-400" />
+          <h2 className="text-sm font-medium text-gray-900">Pull requests</h2>
           {!loading && (
-            <span className="ml-auto text-[11px] text-zinc-600 font-mono">{filteredPRs.length}</span>
+            <span className="ml-auto text-[11px] text-gray-400 font-mono">{filteredPRs.length}</span>
           )}
         </div>
 
         {/* Filters */}
         <div className="flex gap-1">
-          {(['all', 'review', 'mine'] as const).map((f) => (
+          {(['all', 'assigned', 'reviewer'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
                 filter === f
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-600 hover:text-zinc-400'
+                  ? 'bg-gray-200 text-gray-900'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              {f === 'all' ? 'All' : f === 'review' ? 'Needs review' : 'Mine'}
+              {f === 'all' ? 'All' : f === 'assigned' ? 'Assigned' : 'Reviewer'}
             </button>
           ))}
         </div>
@@ -55,15 +55,15 @@ export default function PRList() {
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
-            <p className="text-xs text-zinc-600">Fetching PRs...</p>
+            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+            <p className="text-xs text-gray-400">Fetching PRs...</p>
           </div>
         )}
 
         {!loading && filteredPRs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
-            <MessageSquare className="w-5 h-5 text-zinc-700" />
-            <p className="text-xs text-zinc-600">No open pull requests</p>
+            <MessageSquare className="w-5 h-5 text-gray-300" />
+            <p className="text-xs text-gray-400">No open pull requests</p>
           </div>
         )}
 

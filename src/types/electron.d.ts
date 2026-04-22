@@ -5,7 +5,7 @@ interface ExecResult {
 
 interface ElectronAPI {
   exec: (command: string, args: string[]) => Promise<ExecResult>
-  execStream: (command: string, args: string[]) => void
+  execStream: (command: string, args: string[], stdinData?: string) => void
   onStreamData: (callback: (data: string) => void) => void
   onStreamEnd: (callback: (code: number) => void) => void
   onStreamError: (callback: (error: string) => void) => void

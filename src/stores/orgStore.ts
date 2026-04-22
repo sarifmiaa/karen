@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+const LS_KEY = 'karen:selectedOrg'
+
 interface Org {
   login: string
   avatar_url: string
@@ -23,22 +25,28 @@ export const useOrgStore = create<OrgState>((set) => ({
   fetchOrgs: async () => {
     set({ loading: true })
     try {
-      // Get current user
       const userResult = await window.api.exec('gh', ['api', '/user', '--jq', '.login'])
       const currentUser = userResult.stdout.trim()
 
-      // Get orgs
       const orgsResult = await window.api.exec('gh', [
-        'api', '/user/orgs', '--jq', '[.[] | {login, avatar_url}]'
+        'api', '/user/orgs', '--jq', '[.[] | {login, avatar_url}]',
       ])
       const orgs: Org[] = JSON.parse(orgsResult.stdout)
 
-      set({ orgs, currentUser, loading: false })
+      // Restore the last-used org from localStorage; fall back to personal account
+      const stored = localStorage.getItem(LS_KEY)
+      const validLogins = new Set([currentUser, ...orgs.map((o) => o.login)])
+      const selectedOrg = stored && validLogins.has(stored) ? stored : currentUser
+
+      set({ orgs, currentUser, selectedOrg, loading: false })
     } catch (error) {
       console.error('Failed to fetch orgs:', error)
       set({ loading: false })
     }
   },
 
-  setSelectedOrg: (org) => set({ selectedOrg: org }),
+  setSelectedOrg: (org) => {
+    if (org) localStorage.setItem(LS_KEY, org)
+    set({ selectedOrg: org })
+  },
 }))

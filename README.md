@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Karen
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A macOS desktop app for browsing GitHub pull requests across all your orgs and reviewing them with Claude AI.
 
-Currently, two official plugins are available:
+![Electron](https://img.shields.io/badge/Electron-41-47848F?logo=electron)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Browse open PRs across all your GitHub orgs in one place
+- Read PR descriptions and file diffs
+- AI-powered code review via Claude (streamed output)
+- Follow-up chat with Claude about a PR
+- Reviews cached locally so you don't re-run them
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Prerequisites
 
-## Expanding the ESLint configuration
+- **macOS only** (Windows and Linux are not supported)
+- [GitHub CLI](https://cli.github.com/) — authenticated (`gh auth login`)
+- [Claude Code CLI](https://claude.ai/code) — authenticated (`claude login`)
+- Node.js 20+
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/sarifmiaa/karen.git
+cd karen
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The app will open automatically. On first launch it checks that `gh` and `claude` CLIs are available and authenticated.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Build
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Compile Electron main process
+npm run build:electron
+
+# Package the app (macOS .dmg)
+npm run pack
 ```
+
+## Tech stack
+
+- [Electron](https://electronjs.org/) 41 — macOS desktop shell
+- [Vite](https://vitejs.dev/) 8 + [React](https://react.dev/) 19 — renderer
+- [TypeScript](https://typescriptlang.org/) 6
+- [Tailwind CSS](https://tailwindcss.com/) 4
+- [Zustand](https://zustand-demo.pmnd.rs/) — state management
+- [GitHub CLI](https://cli.github.com/) — data fetching (`gh` subprocess)
+- [Claude Code CLI](https://claude.ai/code) — AI reviews (`claude` subprocess)
+
+## Architecture
+
+```
+electron/          # Main process (Node.js)
+  main.ts          # App lifecycle, IPC handlers, subprocess execution
+  preload.ts       # contextBridge — exposes window.api to renderer
+
+src/               # Renderer process (React)
+  components/      # UI components grouped by feature
+  stores/          # Zustand stores (orgs, PRs, reviews)
+  types/           # TypeScript types including Electron IPC types
+```
+
+The renderer never touches Node.js directly. All `gh` and `claude` commands go through `window.api.exec()` → IPC → `execFile` in the main process.
+
+## License
+
+MIT

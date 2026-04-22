@@ -43,7 +43,7 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
     try {
       const ghVersion = await window.api.exec('gh', ['--version'])
       const version = ghVersion.stdout.split('\n')[0] || ghVersion.stdout
-      
+
       // Check auth
       try {
         await window.api.exec('gh', ['auth', 'status'])
@@ -80,15 +80,15 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
   }
 
   return (
-    <div className="h-screen bg-zinc-950 flex items-center justify-center p-8">
+    <div className="h-screen bg-gray-50 flex items-center justify-center p-8">
       <div className="w-full max-w-lg">
         {/* Logo and title */}
         <div className="mb-10 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 mb-5">
             <Terminal className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Karen</h1>
-          <p className="text-sm text-zinc-500 mt-1">PR review powered by Claude Code</p>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Karen</h1>
+          <p className="text-sm text-gray-500 mt-1">PR review powered by Claude Code</p>
         </div>
 
         {/* Tool checks */}
@@ -98,16 +98,16 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
               key={i}
               className={`rounded-xl border p-4 transition-all duration-300 ${
                 tool.status === 'ok'
-                  ? 'border-emerald-800/50 bg-emerald-950/20'
+                  ? 'border-emerald-200 bg-emerald-50'
                   : tool.status === 'checking'
-                  ? 'border-zinc-800 bg-zinc-900/50'
-                  : 'border-red-900/50 bg-red-950/20'
+                  ? 'border-gray-200 bg-white'
+                  : 'border-red-200 bg-red-50'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
                   {tool.status === 'checking' && (
-                    <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                   )}
                   {tool.status === 'ok' && (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -118,25 +118,25 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white">{tool.name}</span>
+                    <span className="text-sm font-medium text-gray-900">{tool.name}</span>
                     {tool.version && (
-                      <span className="text-xs text-zinc-600 font-mono">{tool.version}</span>
+                      <span className="text-xs text-gray-400 font-mono">{tool.version}</span>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-500 mt-0.5">{tool.description}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{tool.description}</p>
 
                   {tool.status === 'missing' && (
-                    <div className="mt-3 rounded-lg bg-zinc-900 border border-zinc-800 p-3">
-                      <p className="text-xs text-zinc-400 mb-2">Install with:</p>
-                      <code className="text-xs text-amber-400 font-mono break-all">
+                    <div className="mt-3 rounded-lg bg-gray-100 border border-gray-200 p-3">
+                      <p className="text-xs text-gray-600 mb-2">Install with:</p>
+                      <code className="text-xs text-amber-600 font-mono break-all">
                         {tool.installCmd}
                       </code>
                     </div>
                   )}
 
                   {tool.status === 'auth-failed' && (
-                    <div className="mt-3 rounded-lg bg-zinc-900 border border-zinc-800 p-3">
-                      <p className="text-xs text-red-400">{tool.detail}</p>
+                    <div className="mt-3 rounded-lg bg-gray-100 border border-gray-200 p-3">
+                      <p className="text-xs text-red-600">{tool.detail}</p>
                     </div>
                   )}
                 </div>
@@ -150,7 +150,7 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
           {doneChecking && !allReady && (
             <button
               onClick={recheck}
-              className="px-4 py-2.5 rounded-lg border border-zinc-800 text-sm text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+              className="px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
             >
               Recheck
             </button>
@@ -168,7 +168,7 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
 
         {/* Status summary */}
         {doneChecking && !allReady && (
-          <p className="text-center text-xs text-zinc-600 mt-4">
+          <p className="text-center text-xs text-gray-400 mt-4">
             Install the missing tools above, then click Recheck
           </p>
         )}

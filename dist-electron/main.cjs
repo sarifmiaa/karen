@@ -25,11 +25,23 @@ function createWindow() {
     });
     if (isDev) {
         mainWindow.loadURL('http://localhost:5173');
-        mainWindow.webContents.openDevTools();
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
     else {
         mainWindow.loadFile(path_1.default.join(__dirname, '../dist/index.html'));
     }
+    // Open all external URLs in the default browser, never inside the app
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        electron_1.shell.openExternal(url);
+        return { action: 'deny' };
+    });
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        const appUrl = isDev ? 'http://localhost:5173' : `file://${path_1.default.join(__dirname, '../dist/')}`;
+        if (!url.startsWith(appUrl)) {
+            event.preventDefault();
+            electron_1.shell.openExternal(url);
+        }
+    });
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
@@ -44,6 +56,41 @@ function getEnv() {
         GH_PROMPT_DISABLED: '1',
     };
 }
+// IPC: spawn a command and stream stdout/stderr back chunk by chunk
+let currentStreamProcess = null;
+electron_1.ipcMain.on('exec-stream', (_event, command, args, stdinData) => {
+    if (currentStreamProcess) {
+        currentStreamProcess.kill();
+        currentStreamProcess = null;
+    }
+    const proc = (0, child_process_1.spawn)(command, args, { env: getEnv(), stdio: ['pipe', 'pipe', 'pipe'] });
+    currentStreamProcess = proc;
+    // Write stdin payload then close — prevents process from blocking on stdin
+    if (stdinData) {
+        proc.stdin?.write(stdinData, 'utf8');
+    }
+    proc.stdin?.end();
+    proc.stdout?.on('data', (chunk) => {
+        mainWindow?.webContents.send('stream-data', chunk.toString());
+    });
+    proc.stderr?.on('data', (chunk) => {
+        mainWindow?.webContents.send('stream-data', chunk.toString());
+    });
+    proc.on('close', (code) => {
+        currentStreamProcess = null;
+        mainWindow?.webContents.send('stream-end', code ?? 0);
+    });
+    proc.on('error', (err) => {
+        currentStreamProcess = null;
+        mainWindow?.webContents.send('stream-error', err.message);
+    });
+});
+electron_1.ipcMain.on('cancel-stream', () => {
+    if (currentStreamProcess) {
+        currentStreamProcess.kill();
+        currentStreamProcess = null;
+    }
+});
 // IPC: execute a command and return stdout/stderr
 electron_1.ipcMain.handle('exec', async (_event, command, args) => {
     return new Promise((resolve, reject) => {

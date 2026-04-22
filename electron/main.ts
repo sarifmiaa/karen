@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import path from 'path'
-import { execFile } from 'child_process'
+import { execFile, spawn } from 'child_process'
+import type { ChildProcess } from 'child_process'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -24,10 +25,24 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173')
-    mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
+
+  // Open all external URLs in the default browser, never inside the app
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const appUrl = isDev ? 'http://localhost:5173' : `file://${path.join(__dirname, '../dist/')}`
+    if (!url.startsWith(appUrl)) {
+      event.preventDefault()
+      shell.openExternal(url)
+    }
+  })
 
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -44,6 +59,50 @@ function getEnv(): NodeJS.ProcessEnv {
     GH_PROMPT_DISABLED: '1',
   }
 }
+
+// IPC: spawn a command and stream stdout/stderr back chunk by chunk
+let currentStreamProcess: ChildProcess | null = null
+
+ipcMain.on('exec-stream', (_event, command: string, args: string[], stdinData?: string) => {
+  if (currentStreamProcess) {
+    currentStreamProcess.kill()
+    currentStreamProcess = null
+  }
+
+  const proc = spawn(command, args, { env: getEnv(), stdio: ['pipe', 'pipe', 'pipe'] })
+  currentStreamProcess = proc
+
+  // Write stdin payload then close — prevents process from blocking on stdin
+  if (stdinData) {
+    proc.stdin?.write(stdinData, 'utf8')
+  }
+  proc.stdin?.end()
+
+  proc.stdout?.on('data', (chunk: Buffer) => {
+    mainWindow?.webContents.send('stream-data', chunk.toString())
+  })
+
+  proc.stderr?.on('data', (chunk: Buffer) => {
+    mainWindow?.webContents.send('stream-data', chunk.toString())
+  })
+
+  proc.on('close', (code) => {
+    currentStreamProcess = null
+    mainWindow?.webContents.send('stream-end', code ?? 0)
+  })
+
+  proc.on('error', (err) => {
+    currentStreamProcess = null
+    mainWindow?.webContents.send('stream-error', err.message)
+  })
+})
+
+ipcMain.on('cancel-stream', () => {
+  if (currentStreamProcess) {
+    currentStreamProcess.kill()
+    currentStreamProcess = null
+  }
+})
 
 // IPC: execute a command and return stdout/stderr
 ipcMain.handle('exec', async (_event, command: string, args: string[]) => {

@@ -16,14 +16,14 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
   }, [fetchOrgs])
 
   return (
-    <div className="w-56 h-screen bg-zinc-950 border-r border-zinc-800/50 flex flex-col pt-10">
+    <div className="w-56 h-screen bg-white border-r border-gray-200 flex flex-col pt-10">
       {/* Logo */}
       <div className="px-4 mb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center">
             <Code2 className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="text-sm font-semibold text-white tracking-tight">Karen</span>
+          <span className="text-sm font-semibold text-gray-900 tracking-tight">Karen</span>
         </div>
       </div>
 
@@ -53,8 +53,8 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-zinc-800/50">
-        <p className="text-[11px] text-zinc-600">Karen v0.1.0</p>
+      <div className="px-4 py-3 border-t border-gray-200">
+        <p className="text-[11px] text-gray-400">Karen v0.1.0</p>
       </div>
     </div>
   )
@@ -71,8 +71,8 @@ function NavItem({ icon, label, active, onClick }: {
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
         active
-          ? 'bg-violet-600/15 text-violet-400'
-          : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+          ? 'bg-violet-50 text-violet-600'
+          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
       }`}
     >
       {icon}
