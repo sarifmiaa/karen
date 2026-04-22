@@ -56,23 +56,20 @@ npm run pack
 ## Architecture
 
 ```
-electron/                    # Main process (Node.js)
-  main.ts                    # App lifecycle, IPC handlers, subprocess execution
-  preload.ts                 # contextBridge — exposes window.api to renderer
+electron/          # Main process (Node.js)
+  main.ts          # App lifecycle, IPC handlers, subprocess execution
+  preload.ts       # contextBridge — exposes window.api to renderer
 
 src/
-  components/                # UI components grouped by feature
-    PRDetail/
-      DiffView/              # Complex components get their own folder
-        index.ts             # Barrel re-export
-        DiffView.tsx         # Root component
-        DiffFileSection.tsx  # Sub-components co-located here
-        DiffHunkSection.tsx
-        InlineFeedbackCard.tsx
-        parseDiff.ts         # Pure logic — no React, no imports from outside
-        types.ts             # Types internal to this feature
-  stores/                    # Zustand stores — own their domain types
-  types/                     # Global ambient declarations only (electron.d.ts)
+  components/      # UI components grouped by feature
+    Feature/
+      index.ts     # Barrel re-export — the only file callers import from
+      Feature.tsx  # Root component
+      Sub.tsx      # Sub-components co-located in the same folder
+      logic.ts     # Pure TS utilities — no React
+      types.ts     # Types internal to this feature
+  stores/          # Zustand stores — own their domain types
+  types/           # Global ambient declarations only (electron.d.ts)
 ```
 
 The renderer never touches Node.js directly. All `gh` and `claude` commands go through `window.api.exec()` → IPC → `execFile` in the main process.
