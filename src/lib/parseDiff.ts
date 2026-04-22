@@ -68,16 +68,12 @@ export function buildFeedbackPlacement(hunks: ParsedHunk[], fileFeedback: Feedba
     }
 
     const inRange = allNewLines.filter(n => n >= fp.lineStart && n <= fp.lineEnd)
-    let insertAt: number | null = null
-
-    if (inRange.length > 0) {
-      insertAt = Math.max(...inRange)
-    } else {
-      insertAt = allNewLines.reduce<number | null>((best, n) => {
-        if (best === null) return n
-        return Math.abs(n - fp.lineEnd) < Math.abs(best - fp.lineEnd) ? n : best
-      }, null)
-    }
+    const insertAt: number | null = inRange.length > 0
+      ? Math.max(...inRange)
+      : allNewLines.reduce<number | null>((best, n) => {
+          if (best === null) return n
+          return Math.abs(n - fp.lineEnd) < Math.abs(best - fp.lineEnd) ? n : best
+        }, null)
 
     if (insertAt !== null) {
       if (!feedbackByLine.has(insertAt)) feedbackByLine.set(insertAt, [])
