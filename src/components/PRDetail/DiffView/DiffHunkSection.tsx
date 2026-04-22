@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import type { FeedbackPoint } from '../../../stores/reviewStore'
 import InlineFeedbackCard from './InlineFeedbackCard'
-import type { ParsedHunk } from './types'
+import type { ParsedHunk } from '../../../lib/diffTypes'
 
 interface Props {
   hunk: ParsedHunk

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { FeedbackPoint } from '../../../stores/reviewStore'
 import DiffFileSection from './DiffFileSection'
 import InlineFeedbackCard from './InlineFeedbackCard'
-import { fileMatches, parseDiff } from './parseDiff'
+import { fileMatches, parseDiff } from '../../../lib/parseDiff'
 
 interface Props {
   diff: string

@@ -1,3 +1,5 @@
+import type { FeedbackPoint } from './review'
+
 export interface ParsedLine {
   type: 'context' | 'add' | 'remove'
   content: string
@@ -19,6 +21,6 @@ export interface ParsedFile {
 }
 
 export interface FeedbackPlacement {
-  feedbackByLine: Map<number, import('../../../stores/reviewStore').FeedbackPoint[]>
-  unmatched: import('../../../stores/reviewStore').FeedbackPoint[]
+  feedbackByLine: Map<number, FeedbackPoint[]>
+  unmatched: FeedbackPoint[]
 }

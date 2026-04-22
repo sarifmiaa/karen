@@ -1,5 +1,5 @@
-import type { FeedbackPoint } from '../../../stores/reviewStore'
-import type { FeedbackPlacement, ParsedFile, ParsedHunk, ParsedLine } from './types'
+import type { FeedbackPoint } from './review'
+import type { FeedbackPlacement, ParsedFile, ParsedHunk, ParsedLine } from './diffTypes'
 
 export function parseDiff(raw: string): ParsedFile[] {
   const files: ParsedFile[] = []
@@ -48,7 +48,6 @@ export function fileMatches(fpFile: string, diffPath: string): boolean {
   if (!fpFile || !diffPath) return false
   return fpFile === diffPath
     || diffPath.endsWith('/' + fpFile)
-    || diffPath.endsWith(fpFile)
 }
 
 export function buildFeedbackPlacement(hunks: ParsedHunk[], fileFeedback: FeedbackPoint[]): FeedbackPlacement {

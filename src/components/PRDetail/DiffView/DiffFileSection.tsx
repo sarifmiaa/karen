@@ -3,8 +3,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { FeedbackPoint } from '../../../stores/reviewStore'
 import DiffHunkSection from './DiffHunkSection'
 import InlineFeedbackCard from './InlineFeedbackCard'
-import { buildFeedbackPlacement, fileMatches } from './parseDiff'
-import type { ParsedFile } from './types'
+import { buildFeedbackPlacement, fileMatches } from '../../../lib/parseDiff'
+import type { ParsedFile } from '../../../lib/diffTypes'
 
 interface Props {
   file: ParsedFile

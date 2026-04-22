@@ -5,10 +5,12 @@ const config: KnipConfig = {
     'electron/main.ts',
     'electron/preload.ts',
     'src/types/electron.d.ts',
+    'tests/**/*.test.{ts,tsx}',
   ],
   project: [
     'src/**/*.{ts,tsx}',
     'electron/**/*.ts',
+    'tests/**/*.{ts,tsx}',
   ],
   ignoreDependencies: [
     'tailwindcss', // peer dep consumed by @tailwindcss/vite
