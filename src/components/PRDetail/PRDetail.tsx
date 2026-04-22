@@ -25,13 +25,9 @@ function PRDetailInner({ pr }: { pr: PR }) {
   const updatePR = usePRStore((s) => s.updatePR)
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [body, setBody] = useState<string | null>(null)
-  const [loadingBody, setLoadingBody] = useState(false)
+  const [loadingBody, setLoadingBody] = useState(true)
 
   useEffect(() => {
-    setActiveTab('overview')
-    setBody(null)
-    setLoadingBody(true)
-
     window.api.exec('gh', [
       'pr', 'view', String(pr.number),
       '--repo', pr.repoFullName,

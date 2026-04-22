@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { CheckCircle2, XCircle, Loader2, Terminal, ArrowRight } from 'lucide-react'
 
 type Status = 'checking' | 'ok' | 'missing' | 'auth-failed'
@@ -34,50 +34,40 @@ export default function HealthCheck({ onReady }: { onReady: () => void }) {
   const allReady = tools.every((t) => t.status === 'ok')
   const doneChecking = tools.every((t) => t.status !== 'checking')
 
-  useEffect(() => {
-    checkTools()
+  const updateTool = useCallback((index: number, updates: Partial<ToolCheck>) => {
+    setTools((prev) => prev.map((t, i) => (i === index ? { ...t, ...updates } : t)))
   }, [])
 
-  async function checkTools() {
-    // Check GitHub CLI
+  const checkTools = useCallback(async () => {
     try {
       const ghVersion = await window.api.exec('gh', ['--version'])
       const version = ghVersion.stdout.split('\n')[0] || ghVersion.stdout
-
-      // Check auth
       try {
         await window.api.exec('gh', ['auth', 'status'])
         updateTool(0, { status: 'ok', version: version.trim() })
       } catch {
-        updateTool(0, {
-          status: 'auth-failed',
-          version: version.trim(),
-          detail: 'Installed but not authenticated. Run: gh auth login',
-        })
+        updateTool(0, { status: 'auth-failed', version: version.trim(), detail: 'Installed but not authenticated. Run: gh auth login' })
       }
     } catch {
       updateTool(0, { status: 'missing' })
     }
 
-    // Check Claude Code
     try {
       const claudeVersion = await window.api.exec('claude', ['--version'])
       updateTool(1, { status: 'ok', version: claudeVersion.stdout.trim() })
     } catch {
       updateTool(1, { status: 'missing' })
     }
-  }
+  }, [updateTool])
 
-  function updateTool(index: number, updates: Partial<ToolCheck>) {
-    setTools((prev) =>
-      prev.map((t, i) => (i === index ? { ...t, ...updates } : t))
-    )
-  }
-
-  function recheck() {
+  const recheck = useCallback(() => {
     setTools((prev) => prev.map((t) => ({ ...t, status: 'checking' as Status, version: undefined, detail: undefined })))
     setTimeout(checkTools, 500)
-  }
+  }, [checkTools])
+
+  useEffect(() => {
+    checkTools()
+  }, [checkTools])
 
   return (
     <div className="h-screen bg-gray-50 flex items-center justify-center p-8">

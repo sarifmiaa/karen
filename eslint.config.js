@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // async setState after await is valid data-fetching; rule fires false positives
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])
