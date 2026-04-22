@@ -2,7 +2,7 @@ import { useState } from 'react'
 import HealthCheck from './components/HealthCheck/HealthCheck'
 import Sidebar from './components/Layout/Sidebar'
 import PRList from './components/PRList/PRList'
-import PRDetail from './components/PRDetail/PRDetail'
+import PRDetail from './components/PRDetail'
 
 function App() {
   const [ready, setReady] = useState(false)
